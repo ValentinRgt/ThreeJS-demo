@@ -29,43 +29,46 @@
 
     <div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
     <script type="module">
-          import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
-          import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+        // Source : https://threejs-journey.com/lessons/animations
+        import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
+        import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js';
 
-          var WIDTH = window.innerWidth;
-          var HEIGHT = window.innerHeight;
+        var WIDTH = window.innerWidth;
+        var HEIGHT = window.innerHeight;
 
-          var renderer, scene, camera;
+        var renderer, scene, camera;
+        let sphere, position = 0, time = Date.now();
 
-          init();
+        init();
 
-          function init() {
+        function init() {
 
             var group = new THREE.Group();
-            camera = new THREE.PerspectiveCamera(60, WIDTH / HEIGHT, 0.1, 1550);
+            camera = new THREE.PerspectiveCamera( 60, WIDTH / HEIGHT, 0.1, 1550 );
 
             camera.position.z = 150;
             camera.position.y = 50;
 
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0);
+            scene.background = new THREE.Color( 0x0 ); 
 
             // ======== Geometry =============
 
-            let sphereGeometry = new THREE.SphereGeometry(5, 32, 16);
-            let planeGeometry = new THREE.PlaneGeometry(200, 200);
+            let sphereGeometry = new THREE.SphereGeometry( 8, 32, 16 );
+            let planeGeometry = new THREE.PlaneGeometry( 200,200);
 
             // ======== Materials =============
 
-            let shpereMaterial = new THREE.MeshBasicMaterial({
-              map: new THREE.TextureLoader().load(
-                'https://static.wikia.nocookie.net/minecraft_gamepedia/images/d/dc/Stone_%28texture%29_JE5_BE3.png'
-              )
+            let yellowMaterial = new THREE.MeshBasicMaterial({
+                color: 0xed9005,
+                map: new THREE.TextureLoader().load(
+                  'https://static.wikia.nocookie.net/minecraft_gamepedia/images/d/dc/Stone_%28texture%29_JE5_BE3.png'
+                )
             });
 
             let whiteMaterial = new THREE.MeshPhongMaterial({
-              color: 0xffffff,
-              side: THREE.DoubleSide
+                color: 0xffffff,
+                side: THREE.DoubleSide
             });
 
 
@@ -88,22 +91,9 @@
             // Position X is the width
             // Position Z is the depth
 
-            let pyramidSize = 3;
-
-            for (let n1 = 0; n1 < pyramidSize; n1++) {
-              for (let n2 = 0; n2 < pyramidSize; n2++) {
-                let sphere = new THREE.Mesh(sphereGeometry, shpereMaterial);
-                sphere.position.z = 20 * n2;
-                sphere.position.x = 20 * n1;
-                scene.add(sphere);
-
-                console.log({
-                  'layer': n1,
-                  'sphere': n2,
-                  'sphereid': sphere
-                });
-              }
-            }
+            sphere = new THREE.Mesh(sphereGeometry, yellowMaterial);
+            sphere.position.y = 10;
+            scene.add(sphere);
 
             let plane = new THREE.Mesh(planeGeometry, whiteMaterial);
             plane.rotation.x = Math.PI * -.5;
@@ -112,26 +102,38 @@
 
             // ========== RENDERER ============
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(WIDTH, HEIGHT);
+            renderer = new THREE.WebGLRenderer({antialias :true});
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.setSize( WIDTH, HEIGHT );
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
             //====== ORBIT CONTROL ============
 
             var controls = new OrbitControls(camera, renderer.domElement);
 
 
-            var container = document.getElementById('ThreeJS');
-            container.appendChild(renderer.domElement);
+            var container = document.getElementById( 'ThreeJS' );
+            container.appendChild( renderer.domElement );
+
             requestAnimationFrame(render);
+        }
 
+        function render()
+        {
+          sphere.rotation.y += 0.1
+          sphere.rotation.z += 0.1
+          
+          sphere.position.x += Math.cos(position);
+          sphere.position.z += Math.sin(position);
+          position += 0.05
 
-          }
+          // Render
+          renderer.render(scene, camera)
 
-          function render() {
-            renderer.render(scene, camera);
-            requestAnimationFrame(render);
-          }
+          // Call tick again on the next frame
+          window.requestAnimationFrame(render)
+        }
     </script>
 
   </body>
